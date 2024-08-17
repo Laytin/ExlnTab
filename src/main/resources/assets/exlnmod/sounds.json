@@ -1,0 +1,11 @@
+{
+  "button_sound": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "exlnmod:button",
+        "stream": true
+      }
+    ]
+  }
+}
