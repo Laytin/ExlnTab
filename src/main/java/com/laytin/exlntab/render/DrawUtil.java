@@ -50,6 +50,21 @@ public class DrawUtil {
         RenderHelper.enableStandardItemLighting();
         GL11.glEnable(GL12.GL_RESCALE_NORMAL);
     }
+    public static void drawCenterStringWithDepth(FontMagicObj fontContainer, String string, float x, float y, float scale, int color) {
+        GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+        RenderHelper.disableStandardItemLighting();
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        GL11.glPushMatrix();
+        GL11.glTranslatef(x - fontContainer.width(string) * scale / 2.0F, y, 0.0F);
+        GL11.glScalef(scale, scale, 1.0F);
+        fontContainer.drawStringWithShadow(string,0,0 , color);
+        GL11.glPopMatrix();
+        GL11.glEnable(GL11.GL_LIGHTING);
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        RenderHelper.enableStandardItemLighting();
+        GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+    }
     public static void drawCenteredString(FontStyles fontType, String string, float x, float y, float scale, int color) {
         FontMagicObj fontContainer = fontType.getFontContainer();
         drawString(fontContainer, string, x - fontContainer.width(string) * scale / 2.0F, y, scale, color);
