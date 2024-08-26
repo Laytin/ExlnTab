@@ -3,10 +3,12 @@ package com.laytin.exlntab.bukkit;
 import com.laytin.exlntab.bukkit.a.A;
 import com.laytin.exlntab.bukkit.a.PluginAdapterLP;
 import com.laytin.exlntab.bukkit.a.PluginAdapterPEX;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import org.bukkit.Bukkit;
 
 import java.util.Map;
-
+@SideOnly(Side.SERVER)
 public class PluginAdapterUtil implements IPluginAdapter{
     private static A adapter;
     public PluginAdapterUtil() {
