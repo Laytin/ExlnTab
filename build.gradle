@@ -35,7 +35,10 @@ minecraft {
 
 
 dependencies {
-	compile name: 'Baubles-1.7.10-1.0.1.10-dev'
+	compileOnly name: 'bukkit-1.13.1-R0.1-SNAPSHOT'
+	implementation "io.gitlab.hohserg.elegant.networking:elegant-networking-1.7.10:3.14"
+	compileOnly "io.gitlab.hohserg.elegant.networking:annotation-processor:3.14"
+	annotationProcessor "io.gitlab.hohserg.elegant.networking:annotation-processor:3.14"
 }
 
 processResources {
