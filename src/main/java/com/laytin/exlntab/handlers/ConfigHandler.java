@@ -11,12 +11,24 @@ import java.util.Map;
 
 public class ConfigHandler {
     public static Configuration config;
-    public static String avatarUrl = "";
-    public static String skinUrl = "";
-    public static String tabHeader = "";
+    public static String avatarUrl = "https://tlauncher.org/upload/all/nickname/%player%.png";
+    public static String skinUrl = "https://tlauncher.org/upload/all/nickname/%player%.png";
+    public static String tabHeader = "Project name | Project server";
     public static boolean useGroupName;
-    public static boolean useGroupPrefix;
-    public static Map<String, String> roleColors = new HashMap<>(); // role ->
+    public static boolean useColouredBg;
+    public static boolean useColorCodes;
+    public static boolean drawTPS;
+    public static boolean drawRoles;
+    public static Map<String, String> roleColors = new HashMap<>(); // role ->colour
+    static{
+        roleColors.put("default", "#525252");
+    }
+    public static String getColourByRole(String role) {
+        if(roleColors.containsKey(role))
+            return roleColors.get(role);
+        return "#525252";
+    }
+
     public ConfigHandler() {
     }
     public static void init(File confFile) {
@@ -34,7 +46,12 @@ public class ConfigHandler {
             skinUrl = getString("tab", "Skins URL", skinUrl);
             tabHeader = getString("tab", "Tab Header", tabHeader);
             ConfigCategory cc = config.getCategory("tabGroupColor");
-            cc.getOrderedValues().stream().forEach(System.out::println);
+            cc.getOrderedValues().stream().forEach(f-> roleColors.put(f.getName(), f.getString()));
+            useGroupName = config.get("tabSpecific", "Use group name", useGroupName).getBoolean();
+            useColorCodes = config.get("tabSpecific", "Use colour codes", useColorCodes).getBoolean();
+            useColouredBg = config.get("tabSpecific", "Use colored bg", useColouredBg).getBoolean();
+            drawTPS = config.get("tabSpecific", "Draw TPS", drawTPS).getBoolean();
+            drawRoles = config.get("tabSpecific", "Draw role", drawRoles).getBoolean();
         } catch (Exception var4) {
             System.out.println("Unable to load Config");
             var4.printStackTrace();
