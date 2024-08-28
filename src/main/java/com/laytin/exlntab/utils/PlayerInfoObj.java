@@ -47,4 +47,14 @@ public class PlayerInfoObj {
     public void setWeight(int weight) {
         this.weight = weight;
     }
+
+    @Override
+    public String toString() {
+        return "PlayerInfoObj{" +
+                "role='" + role + '\'' +
+                ", roleDisplayName='" + roleDisplayName + '\'' +
+                ", username='" + username + '\'' +
+                ", weight=" + weight +
+                '}';
+    }
 }

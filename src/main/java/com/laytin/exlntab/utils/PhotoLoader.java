@@ -56,13 +56,6 @@ public class PhotoLoader implements Runnable {
             endUpload.add(username);
         }
     }
-    public ResourceLocation getExternalTexture(String id, String fileUrl) {
-        ResourceLocation keyToTexture = new ResourceLocation(id);
-        TextureManager texturemanager = Minecraft.getMinecraft().getTextureManager();
-        texturemanager.loadTexture(keyToTexture, (ITextureObject)new ThreadDownloadImageData(null, fileUrl, null, null));
-        ITextureObject object = texturemanager.getTexture(keyToTexture);
-        return keyToTexture;
-    }
     private BufferedImage faceFromSkin(BufferedImage skinImage) {
         int faceSize = 8;
         int overlaySize = 40;
@@ -78,14 +71,6 @@ public class PhotoLoader implements Runnable {
         g.drawImage(face, 0, 0, (ImageObserver)null);
         g.drawImage(overlay, 0, 0, (ImageObserver)null);
         return merged;
-    }
-    public static String getImageFormat(ImageInputStream iis) throws IOException {
-        Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
-        if (!readers.hasNext()) {
-            return null;
-        }
-        ImageReader reader = readers.next();
-        return reader.getFormatName();
     }
 }
 
