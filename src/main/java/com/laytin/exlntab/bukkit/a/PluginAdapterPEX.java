@@ -2,11 +2,9 @@ package com.laytin.exlntab.bukkit.a;
 
 import com.laytin.exlntab.bukkit.IPluginAdapter;
 import com.laytin.exlntab.bukkit.PluginInjector;
-import org.bukkit.entity.Player;
+import com.laytin.exlntab.utils.PlayerInfoObj;
 
-import java.util.Map;
-
-public class PluginAdapterPEX implements A{
+public class PluginAdapterPEX {
     private static IPluginAdapter injection;
     private static boolean loading = false;
 
@@ -33,10 +31,10 @@ public class PluginAdapterPEX implements A{
         autoInject();
         return inject;
     }
-    public static Map<String, Integer> getPlayerGroupWithWeight() {
+    public static PlayerInfoObj getPlayerGroupWithWeight(String username) {
         try {
             checkInject();
-            return injection.getPlayerGroupWithWeight();
+            return injection.getPlayerGroupWithWeight(username);
         } catch (InstantiationException e) {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
@@ -46,7 +44,7 @@ public class PluginAdapterPEX implements A{
 
     public static final class Inj implements IPluginAdapter {
         @Override
-        public Map<String, Integer> getPlayerGroupWithWeight() {
+        public PlayerInfoObj getPlayerGroupWithWeight(String username) {
             return null;
         }
     }
