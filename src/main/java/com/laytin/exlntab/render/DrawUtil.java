@@ -1,13 +1,13 @@
 package com.laytin.exlntab.render;
 
+import com.google.common.collect.Maps;
 import com.laytin.exlntab.render.font.FontMagicObj;
 import com.laytin.exlntab.render.font.FontStyles;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.texture.ITextureObject;
-import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.texture.*;
+import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
@@ -16,14 +16,21 @@ import net.minecraftforge.client.IItemRenderer;
 import net.minecraftforge.client.MinecraftForgeClient;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL30;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 import static net.minecraftforge.client.IItemRenderer.ItemRendererHelper.INVENTORY_BLOCK;
+import static org.lwjgl.opengl.ARBTextureMultisample.GL_TEXTURE_2D_MULTISAMPLE;
+import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
 
 public class DrawUtil {
+
     public static HashMap<String, ResourceLocation> externalTextures = new HashMap<>();
     private static final ResourceLocation RES_ITEM_GLINT = new ResourceLocation("textures/misc/enchanted_item_glint.png");
     private static RenderBlocks renderBlocksRi = new RenderBlocks();
@@ -425,4 +432,103 @@ public class DrawUtil {
         RenderHelper.enableStandardItemLighting();
         GL11.glEnable(GL12.GL_RESCALE_NORMAL);
     }
+    public static void drawRoundedSquare(float x, float y, float width, float height, float radius, int color, float alpha) {
+        drawRectFloat(x+radius,y,x+width-radius,y+height,color,1);
+        drawRectFloat(x,y+radius,x+width,y+height-radius,color,1);
+
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+        float f = (float)(color >> 16 & 255) / 255.0F;
+        float f1 = (float)(color >> 8 & 255) / 255.0F;
+        float f2 = (float)(color & 255) / 255.0F;
+
+        GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+        RenderHelper.disableStandardItemLighting();
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+        GL11.glColor4f(f, f1, f2, 1);
+        circleProgress(x+radius, y+radius, x, y, radius, radius, radius, radius, 90, 90F, 32, true);
+        circleProgress(x+radius, y+height-radius, x, y+height-radius, radius, radius, radius, radius, 90, 0F, 32, true);
+        circleProgress(x+width-radius, y+radius, x, y+height-radius, radius, radius, radius, radius, 90, 180F, 32, true);
+        circleProgress(x+width-radius, y+height-radius, x, y+height-radius, radius, radius, radius, radius, 90, 270F, 32, true);
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+        GL11.glDisable(GL11.GL_BLEND);
+
+        GL11.glEnable(GL11.GL_LIGHTING);
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        RenderHelper.enableStandardItemLighting();
+        GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+    }
+    public static void circleProgress(
+            float x, float y,
+            float u, float v, float sizeU, float sizeV,
+            float radius, float radiusUV,
+            float progress, float initialDegree, int segment, boolean clockwise) {
+
+        float a = 360F / segment;
+        float b = 0;
+
+        double degree, sin, cos;
+        double osin = 0;
+        double ocos = 0;
+
+
+        float offsetU = 1F / sizeU;
+        float offsetV = 1F / sizeV;
+
+        Tessellator tessellator = Tessellator.instance;
+        tessellator.startDrawing(GL11.GL_TRIANGLES);
+
+        for (int i = 0; i <= segment; ++i) {
+
+            b = a * i;
+            if (b < progress)
+                degree = (initialDegree + b) * Math.PI / 180D;
+            else
+                degree = (initialDegree + progress) * Math.PI / 180D;
+
+            if (clockwise) {
+                //По часовой
+                sin = Math.sin(-degree);
+                cos = Math.cos(-degree);
+
+                tessellator.addVertexWithUV((double)x + (osin * radius), (double)y + (ocos * radius), 0D,
+                        (double)((float)(u + (osin * radiusUV)) * offsetU), (double)((float)(v + (ocos * radiusUV)) * offsetV));
+
+                tessellator.addVertexWithUV((double)x, (double)y, 0D,
+                        (double)((float)u * offsetU), (double)((float)v * offsetV));
+
+                tessellator.addVertexWithUV((double)x + (sin * radius), (double)y + (cos * radius), 0D,
+                        (double)((float)(u + (sin * radiusUV)) * offsetU), (double)((float)(v + (cos * radiusUV)) * offsetV));
+
+                osin = sin;
+                ocos = cos;
+            }
+            else {
+                //Против часовой
+                sin = Math.sin(degree);
+                cos = Math.cos(degree);
+
+                tessellator.addVertexWithUV((double)x + (sin * radius), (double)y + (cos * radius), 0D,
+                        (double)((float)(u + (sin * radiusUV)) * offsetU), (double)((float)(v + (cos * radiusUV)) * offsetV));
+
+                tessellator.addVertexWithUV((double)x, (double)y, 0D,
+                        (double)((float)u * offsetU), (double)((float)v * offsetV));
+
+                tessellator.addVertexWithUV((double)x + (osin * radius), (double)y + (ocos * radius), 0D,
+                        (double)((float)(u + (osin * radiusUV)) * offsetU), (double)((float)(v + (ocos * radiusUV)) * offsetV));
+
+                osin = sin;
+                ocos = cos;
+            }
+
+            if (b > progress) break;
+        }
+
+        tessellator.draw();
+    }
+
+
 }
