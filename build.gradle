@@ -35,7 +35,9 @@ minecraft {
 
 
 dependencies {
+	compileOnly name: 'PermissionsEx1-7-10'
 	compileOnly name: 'bukkit-1.13.1-R0.1-SNAPSHOT'
+	compileOnly 'net.luckperms:api:5.4'
 	implementation "io.gitlab.hohserg.elegant.networking:elegant-networking-1.7.10:3.14"
 	compileOnly "io.gitlab.hohserg.elegant.networking:annotation-processor:3.14"
 	annotationProcessor "io.gitlab.hohserg.elegant.networking:annotation-processor:3.14"
