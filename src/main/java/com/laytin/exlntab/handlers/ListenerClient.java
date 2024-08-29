@@ -3,39 +3,32 @@ package com.laytin.exlntab.handlers;
 import com.laytin.exlntab.proxy.ResourcesProxy;
 import com.laytin.exlntab.render.DrawUtil;
 import com.laytin.exlntab.render.PhotoRender;
-import com.laytin.exlntab.render.font.FontMagicObj;
 import com.laytin.exlntab.render.font.FontStyles;
 import com.laytin.exlntab.utils.PlayerInfoObj;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.InputEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiPlayerInfo;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @SideOnly(Side.CLIENT)
 public class ListenerClient {
-    //static public for packets
-    public static Map<String, PlayerInfoObj> playerList = new HashMap<>();
-    public static float tps = 20F;
-    //
+    public Map<String, PlayerInfoObj> playerList = new HashMap<>();
+    public float tps = 20F;
     private final Minecraft mc = Minecraft.getMinecraft();
     private float referenceWidth = 427.0F;
     private float referenceHeight = 240.0F;
@@ -44,6 +37,13 @@ public class ListenerClient {
     private float minScale = 1.0F;
     private float alpha =0.0f;
     private int scrollOffset =0;
+    private static ListenerClient instance;
+    public static ListenerClient getInstance() {
+        return instance;
+    }
+    public ListenerClient() {
+        instance=this;
+    }
 
     @SubscribeEvent(
             priority = EventPriority.HIGH
@@ -64,24 +64,15 @@ public class ListenerClient {
             && event.type == RenderGameOverlayEvent.ElementType.TEXT) {
             recalculateScale(widthScreen,heightScreen);
             ArrayList<GuiPlayerInfo> players = new ArrayList(handler.playerInfoList);
+            List<String> playerNames = players.stream().map(f->f.name).collect(Collectors.toList());
             drawBackground(widthScreen,heightScreen,
                     players.stream().filter(f->f.name.equals(this.mc.getSession().getUsername())).findFirst().get().responseTime, players.size());
-            drawScissorList(widthScreen,heightScreen,players);
-/*            this.mc.mcProfiler.startSection("playerList");
-            ArrayList players = new ArrayList(handler.playerInfoList);
-            GL11.glPushMatrix();
-            GL11.glDisable(2929);
-            int i;
-            for(i = 0; i < players.size(); ++i) {
-                GuiPlayerInfo player = (GuiPlayerInfo)players.get(i);
-                String playerName = player.name;
-                PhotoRender.getInstance().drawAvatar(playerName, 50,50,50,50);
-            }
-            GL11.glPopMatrix();
-            GL11.glEnable(2929);*/
+            drawScissorList(widthScreen,heightScreen,playerNames);
+            if(alpha<0.9)
+                alpha+=0.1f;
         }
     }
-    private void drawScissorList(int widthScreen, int heightScreen,ArrayList<GuiPlayerInfo> players){
+    private void drawScissorList(int widthScreen, int heightScreen,List<String> list1){
         //pushmatrix to move it to float coords cuz scissor can be called only with int values
         GL11.glPushMatrix();
         GL11.glTranslatef(widthScreen/2-140*minScale, heightScreen/2 - 55*minScale, 0.0F);
@@ -89,21 +80,41 @@ public class ListenerClient {
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         glScissor((widthScreen/2-140*minScale), (heightScreen/2 - 55*minScale),(minScale * 280F),  (minScale * 125F));
         //main render
-        //playerList.put("Steve1111111111111111111111111111111111", new PlayerInfoObj("adm6", "Гл.Админ", "Steve1111111111111111111111111111111111",100));
         AtomicInteger a = new AtomicInteger();
-        for(PlayerInfoObj ob : playerList.values()){
-            float xVal = ((a.get())%4)*71.3F*minScale;
-            float yVal = ((a.get())/4)*20*minScale+scrollOffset*minScale;
-            DrawUtil.drawImage(xVal,yVal, 66*minScale,15*minScale,ResourcesProxy.buttonHover,alpha);
+        for(PlayerInfoObj ob : playerList.values()) {
+            if (!list1.contains(ob.getUsername())) //player in vanish
+                continue;
+            mc.thePlayer.addChatMessage(new ChatComponentText("size:"+list1.size()+", size:"+playerList.values().size()));
+            float xVal = ((a.get()) % 4) * 71.3F * minScale;
+            float yVal = ((a.get()) / 4) * 20 * minScale + scrollOffset * minScale;
+            DrawUtil.drawImage(xVal, yVal, 66 * minScale, 15 * minScale, ResourcesProxy.buttonHover, alpha);
             //Avatar
-            PhotoRender.getInstance().drawAvatar(ob.getUsername(), xVal+2*minScale,yVal+2*minScale,11*minScale,11*minScale,1);
-            DrawUtil.drawStringWithDepth(FontStyles.OpenSans_Regular.getFontContainer(),FontStyles.OpenSans_Regular.getFontContainer().getTextFont().trimStringToWidth(ob.getUsername(),25,false),
-                    xVal+15*minScale, yVal+4*minScale,0.3F*minScale, Color.WHITE.getRGB());
+            PhotoRender.getInstance().drawAvatar(ob.getUsername(), xVal + 2 * minScale, yVal + 2 * minScale, 11 * minScale, 11 * minScale, 1);
+            //Name
+            DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(), FontStyles.SemiBold.getFontContainer().getTextFont().trimStringToWidth(ob.getUsername(), 200, false),
+                    xVal + 15 * minScale, yVal + 4 * minScale, 0.2F * minScale, Color.WHITE.getRGB());
+            //roles
+            if (ConfigHandler.drawRoles) {
+                String drawRoleText = ConfigHandler.useGroupName ? ob.getRole() : ob.getRoleDisplayName();
+                drawRoleText = drawRoleText.equals("exlntab") ? "Player" : drawRoleText;
+                if (!ConfigHandler.useColorCodes) {
+                    while (drawRoleText.contains("&")) {
+                        drawRoleText = drawRoleText.replace(drawRoleText.substring(drawRoleText.indexOf("&"), drawRoleText.indexOf("&") + 1), "");
+                    }
+                    while (drawRoleText.contains("§")) {
+                        drawRoleText = drawRoleText.replace(drawRoleText.substring(drawRoleText.indexOf("§"), drawRoleText.indexOf("§") + 2), "");
+                    }
+                } else {
+                    drawRoleText = drawRoleText.replace("&", "§");
+                }
+                drawRoleText = FontStyles.SemiBold.getFontContainer().getTextFont().trimStringToWidth(drawRoleText, 150, false);
+                if (ConfigHandler.useColouredBg)
+                    DrawUtil.drawRoundedSquare(xVal + 15 * minScale, yVal + 8 * minScale,
+                            Math.min(FontStyles.SemiBold.getFontContainer().width(drawRoleText) * 0.17F * minScale + 6 * minScale, 51 * minScale), 5 * minScale, 1 * minScale,
+                                    hex2Rgb(ConfigHandler.getColourByRole(ob.getRole())).getRGB(), alpha);
 
-            if(ConfigHandler.useGroupName){
-                //do smth
-            }else {
-                //do smth
+                DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(), drawRoleText,
+                        ConfigHandler.useColouredBg ? xVal + 18 * minScale : xVal + 15 * minScale, yVal + 10.5f * minScale, 0.17F * minScale, Color.WHITE.getRGB());
             }
             a.incrementAndGet();
         }
@@ -117,25 +128,26 @@ public class ListenerClient {
     }
 
     private void drawBackground(int widthScreen, int heightScreen, int ping, int online){
-        DrawUtil.drawImage(widthScreen/2-150*minScale, heightScreen/2 - 80*minScale,300*minScale, 160*minScale,ResourcesProxy.bigWindow, alpha);
+        DrawUtil.drawImage(widthScreen / 2 - 150 * minScale, heightScreen / 2 - 80 * minScale, 300 * minScale, 160 * minScale, ResourcesProxy.bigWindow, alpha);
         DrawUtil.drawRectFloat(widthScreen/2-140*minScale , heightScreen/2 - 60*minScale,
                 widthScreen/2+140*minScale, heightScreen/2 - 61*minScale, Color.WHITE.getRGB(), alpha);
-        DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(),FontStyles.SemiBold.getFontContainer().getTextFont().trimStringToWidth(ConfigHandler.tabHeader,270,false) ,widthScreen/2-140*minScale, heightScreen/2 - 70*minScale,0.5F*minScale, Color.WHITE.getRGB());
+        DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(),FontStyles.SemiBold.getFontContainer().getTextFont().trimStringToWidth(ConfigHandler.tabHeader,350,false) ,
+                widthScreen/2-140*minScale, heightScreen/2 - 69*minScale,0.3F*minScale, Color.WHITE.getRGB());
         //ping
         drawPing(widthScreen,heightScreen, ping);
         //tps and online
-        DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(), "TPS: ",
-                widthScreen/2+5*minScale, heightScreen/2 - 69*minScale,0.4F*minScale, Color.WHITE.getRGB());
-        DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(), String.valueOf(tps),
-                widthScreen/2+20*minScale, heightScreen/2 - 69*minScale,0.4F*minScale, getTpsColor((int) tps));
-        DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(),"|",
-                widthScreen/2+36*minScale, heightScreen/2 - 69*minScale,0.3F*minScale, Color.WHITE.getRGB());
+        if(ConfigHandler.drawTPS){
+            DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(), "TPS: ",
+                    widthScreen/2+5*minScale, heightScreen/2 - 69*minScale,0.25F*minScale, Color.WHITE.getRGB());
+            DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(), String.valueOf(tps),
+                    widthScreen/2+23*minScale, heightScreen/2 - 69*minScale,0.25F*minScale, getTpsColor((int) tps));
+            DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(),"|",
+                    widthScreen/2+41*minScale, heightScreen/2 - 69*minScale,0.15F*minScale, Color.WHITE.getRGB());
+        }
         DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(),"Online: ",
-                widthScreen/2+40*minScale, heightScreen/2 - 69*minScale,0.4F*minScale, Color.WHITE.getRGB());
+                widthScreen/2+46*minScale, heightScreen/2 - 69*minScale,0.25F*minScale, Color.WHITE.getRGB());
         DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(),String.valueOf(online),
-                widthScreen/2+62*minScale, heightScreen/2 - 69*minScale,0.4F*minScale, hex2Rgb("#498f03").getRGB());
-        if(alpha<0.9)
-            alpha+=0.1f;
+                widthScreen/2+70*minScale, heightScreen/2 - 69*minScale,0.25F*minScale, hex2Rgb("#498f03").getRGB());
     }
     private void drawPing(int widthScreen, int heightScreen, int ping){
         DrawUtil.drawRectFloat(widthScreen/2+132*minScale , heightScreen/2 -66*minScale,
@@ -169,19 +181,19 @@ public class ListenerClient {
             return hex2Rgb("#498f03").getRGB();
         }
     }
-    public static Color hex2Rgb(String colorStr) {
+    private Color hex2Rgb(String colorStr) {
         return new Color(
                 Integer.valueOf( colorStr.substring( 1, 3 ), 16 ),
                 Integer.valueOf( colorStr.substring( 3, 5 ), 16 ),
                 Integer.valueOf( colorStr.substring( 5, 7 ), 16 ) );
     }
-    protected void recalculateScale(int widthScreen, int heightScreen) {
+    private void recalculateScale(int widthScreen, int heightScreen) {
         this.scaleX = widthScreen / this.referenceWidth;
         this.scaleY = heightScreen / this.referenceHeight;
         float minSc = Math.min(this.scaleX, this.scaleY);
         this.minScale = minSc;
     }
-    public void glScissor(float x, float y, float width, float height) {
+    private void glScissor(float x, float y, float width, float height) {
         Minecraft mc = Minecraft.getMinecraft();
         ScaledResolution resolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
         int scale = resolution.getScaleFactor();
@@ -193,58 +205,3 @@ public class ListenerClient {
         GL11.glScissor((int) scissorX, (int) scissorY, (int) scissorWidth, (int) scissorHeight);
     }
 }
-        /*ScoreObjective scoreobjective = this.mc.theWorld.getScoreboard().func_96539_a(0);
-        NetHandlerPlayClient handler = this.mc.thePlayer.sendQueue;
-        int width = event.resolution.getScaledWidth();
-        int height = event.resolution.getScaledHeight();
-        if (this.mc.gameSettings.keyBindPlayerList.getIsKeyPressed() && (!this.mc.isIntegratedServerRunning() || handler.playerInfoList.size() > 1 || scoreobjective != null) && event.type == ElementType.TEXT) {
-            if (event.type == RenderGameOverlayEvent.ElementType.PLAYER_LIST) {
-                event.setCanceled(true);
-            }
-
-            this.mc.mcProfiler.startSection("playerList");
-            ArrayList players = new ArrayList(handler.playerInfoList);
-            int columns = ConfigHandler.playersInARow;
-            int playersPerPage = true;
-            int columnWidth = 400 / columns;
-            int columnHeight = true;
-            int left = (width - columns * columnWidth) / 2;
-            int border = true;
-            int currentPage = 0;
-            GL11.glPushMatrix();
-            GL11.glDisable(2929);
-            GuiIngame var10000 = Minecraft.getMinecraft().ingameGUI;
-            GuiIngame.drawRect(left, 0, left + columnWidth * columns - 1, 19, -2147483648);
-
-            int i;
-            for(i = 0; i < players.size(); ++i) {
-                int cellPtr = i - currentPage * 120;
-                int xPos = left + cellPtr % columns * columnWidth;
-                int yPos = 20 + cellPtr / columns * 18;
-                if (i < players.size()) {
-                    var10000 = Minecraft.getMinecraft().ingameGUI;
-                    GuiIngame.drawRect(xPos, yPos, xPos + columnWidth - 1, yPos + 18 - 1, (new Color(158, 152, 152, 100)).getRGB());
-                    GuiPlayerInfo player = (GuiPlayerInfo)players.get(i);
-                    String playerName = player.name;
-                    ScorePlayerTeam team = this.mc.theWorld.getScoreboard().getPlayersTeam(playerName);
-                    String[] displayName = ScorePlayerTeam.formatPlayerName(team, playerName).replaceAll("&", ").split(" ");
-                            String name = displayName.length == 1 ? displayName[0] : displayName[1];
-                    String prefix = displayName.length > 1 ? displayName[0] : "";
-                    int strWidthName = this.mc.fontRenderer.getStringWidth(name.replaceAll(", "")) / 2;
-                    int strWidthPrefix = this.mc.fontRenderer.getStringWidth(prefix.replaceAll(", "")) / 2;
-                    this.mc.fontRenderer.drawString(name, (columnWidth + 18) / 2 - strWidthName + xPos - 2, yPos + 5, 16777215);
-                    if (this.bindFace(StringUtils.stripControlCodes(playerName))) {
-                        RenderUtil.drawImage(xPos, yPos, 17, 17);
-                    }
-                }
-            }
-
-            i = (int)Math.ceil((double)players.size() / (double)columns) * 18 + 20;
-            var10000 = Minecraft.getMinecraft().ingameGUI;
-            GuiIngame.drawRect(left, i, left + columnWidth * columns - 1, i + 19, -2147483648);
-            this.mc.ingameGUI.drawCenteredString(this.mc.fontRenderer, ConfigHandler.tabHeader.replace('&', ').replace("%online%", String.valueOf(players.size())).replace("%maxplayers%", String.valueOf(handler.currentServerMaxPlayers)), width / 2, 6, -1);
-            this.mc.ingameGUI.drawCenteredString(this.mc.fontRenderer, ConfigHandler.tabFooter.replace('&', ').replace("%online%", String.valueOf(players.size())).replace("%maxplayers%", String.valueOf(handler.currentServerMaxPlayers)), width / 2, i + 6, -1);
-                    GL11.glPopMatrix();
-            GL11.glEnable(2929);
-        }
-*/
