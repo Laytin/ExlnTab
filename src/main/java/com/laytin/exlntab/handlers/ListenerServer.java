@@ -1,13 +1,16 @@
 package com.laytin.exlntab.handlers;
 
-import com.laytin.exlntab.bukkit.a.PluginAdapterLP;
-import com.laytin.exlntab.bukkit.a.PluginAdapterPEX;
+import com.laytin.exlntab.bukkit.permission.PluginAdapterLP;
+import com.laytin.exlntab.bukkit.permission.PluginAdapterPEX;
+import com.laytin.exlntab.bukkit.spark.SparkAdapter;
 import com.laytin.exlntab.packets.AddPlayerListPacket;
 import com.laytin.exlntab.packets.FillPlayerListPacket;
 import com.laytin.exlntab.packets.RemovePlayerListPacket;
+import com.laytin.exlntab.packets.TpsPacket;
 import com.laytin.exlntab.utils.PlayerInfoObj;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -17,8 +20,10 @@ import java.util.*;
 
 @SideOnly(Side.SERVER)
 public class ListenerServer {
+    private int tpsTicks;
     private Map<String, PlayerInfoObj> playerListTemp = new HashMap<>();
     private boolean inited = false;
+    private boolean sparkInited = false;
     private static int abc = 0;
     private void init(){
         if(Bukkit.getServer().getPluginManager().isPluginEnabled("PermissionEX")){
@@ -44,6 +49,18 @@ public class ListenerServer {
         }else {
             throw new RuntimeException("[EXLNTab] No permission plugin found. Just use PermissionEX or LuckPerms!");
         }
+        if(Bukkit.getServer().getPluginManager().isPluginEnabled("spark")){
+            try {
+                SparkAdapter.init();
+                System.out.println("[EXLNTab] Init Spark plugin");
+                sparkInited =true;
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (InstantiationException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        inited=true;
     }
 
     @SubscribeEvent
@@ -63,10 +80,23 @@ public class ListenerServer {
                 break;
         }
         playerListTemp.put(ib.getUsername(),ib);
-        //
         new FillPlayerListPacket(new ArrayList<>(playerListTemp.values())).sendToPlayer((EntityPlayerMP) event.player);
-        //
         new AddPlayerListPacket(ib).sendToClients();
+        if(sparkInited)
+            new TpsPacket(SparkAdapter.getTps()).sendToPlayer((EntityPlayerMP) event.player);
+    }
+    @SubscribeEvent
+    public void tpsTickEvent(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            if (this.tpsTicks > 3600) {
+                if(!inited)
+                    init();
+                else if(sparkInited)
+                    new TpsPacket(SparkAdapter.getTps()).sendToClients();
+                this.tpsTicks = 0;
+            }
+            this.tpsTicks++;
+        }
     }
     @SubscribeEvent
     public void onLeftEvent(PlayerEvent.PlayerLoggedOutEvent event) {
