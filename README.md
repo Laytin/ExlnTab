@@ -117,3 +117,12 @@ The prefix is ​​the main thing you need, this is what will be displayed by d
 Also u should setup default group 
 `/pex default group <group> true` (otherwise new player joined with null group, it throw new NullPointer ex)
 
+# LuckPerms Setup
+
+Group or player should have permission like that in format `prefix.<rank>.<GroupNameOrPrefix>`:
+```
+prefix.100.Admin 
+```
+U can simply do it in `/lp editor`
+
+![image](https://github.com/user-attachments/assets/9724a12e-67ce-4d4e-8dc1-2bf9989af3ac)
