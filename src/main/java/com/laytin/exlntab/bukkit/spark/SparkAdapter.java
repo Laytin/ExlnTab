@@ -10,7 +10,11 @@ import cpw.mods.fml.relauncher.SideOnly;
 import me.lucko.spark.api.SparkProvider;
 import me.lucko.spark.api.statistic.StatisticWindow;
 import net.luckperms.api.LuckPermsProvider;
+import ru.justagod.cutter.GradleSide;
+import ru.justagod.cutter.GradleSideOnly;
+
 @SideOnly(Side.SERVER)
+@GradleSideOnly(GradleSide.SERVER)
 public class SparkAdapter {
     private static ISparkAdapter injection;
     private static boolean loading = false;
