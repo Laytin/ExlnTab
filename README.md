@@ -35,8 +35,6 @@ Please, If this is what you've been looking for and I was able to help you, you 
 - Put ***-client.jar version in ur launcher minecraft/mods path (or minecraft/mods/1.7.10)
 - Do the same for the server, but with ***-server.jar file
 - Download and install following mods (or extract from "dependences" zip):
-     - CodeChickenLib
-     - CodeChickenCore
      - ElegantNetworking
 - **Optional**: install permission plugin (PermissionsEX or LuckPerms) and Spark (for tps)
 - Start it up!
