@@ -2,8 +2,20 @@ package com.laytin.exlntab.bukkit.permission;
 
 import com.laytin.exlntab.bukkit.PluginInjector;
 import com.laytin.exlntab.utils.PlayerInfoObj;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.luckperms.api.LuckPermsProvider;
+import net.luckperms.api.node.Node;
+import net.luckperms.api.node.NodeType;
+import ru.justagod.cutter.GradleSide;
+import ru.justagod.cutter.GradleSideOnly;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+@GradleSideOnly(GradleSide.SERVER)
+@SideOnly(Side.SERVER)
 public class PluginAdapterLP {
     private static IPermPluginAdapter injection;
     private static boolean loading = false;
@@ -47,10 +59,20 @@ public class PluginAdapterLP {
         public PlayerInfoObj getPlayerGroupWithWeight(String username) {
             PlayerInfoObj ob = new PlayerInfoObj();
             ob.setRole(LuckPermsProvider.get().getUserManager().getUser(username).getPrimaryGroup());
-            ob.setRoleDisplayName(LuckPermsProvider.get().getUserManager().getUser(username).getCachedData().getMetaData().getPrefix());
+            String roleDisplay  =LuckPermsProvider.get().getUserManager().getUser(username).getCachedData().getMetaData().getPrefix();
+            ob.setRoleDisplayName(roleDisplay==null? "Player" : roleDisplay);
             ob.setUsername(username);
-            ob.setWeight(0);
-            System.out.println(ob.toString());
+            try{
+                List<Node> nodeList = new ArrayList<>(LuckPermsProvider.get().getUserManager().getUser(username).getNodes());
+                Optional<Node> nm = nodeList.stream().filter(f-> f.getKey().contains("prefix")).findFirst();
+                if(nm.isPresent()){
+                    String temp = nm.get().getKey().substring(nm.get().getKey().indexOf(".")+1);
+                    ob.setWeight(Integer.parseInt(temp.substring(0,temp.indexOf("."))));
+                }else
+                    ob.setWeight(0);
+            }catch (Exception e ){
+                ob.setWeight(0);
+            }
             return ob;
         }
     }
