@@ -7,6 +7,7 @@ import com.laytin.exlntab.render.font.FontStyles;
 import com.laytin.exlntab.utils.PlayerInfoObj;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.InputEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
@@ -15,6 +16,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.util.ChatComponentText;
+import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -28,7 +30,7 @@ import java.util.stream.Collectors;
 @SideOnly(Side.CLIENT)
 public class ListenerClient {
     public Map<String, PlayerInfoObj> playerList = new HashMap<>();
-    public float tps = 20F;
+    public static String tps = "20";
     private final Minecraft mc = Minecraft.getMinecraft();
     private float referenceWidth = 427.0F;
     private float referenceHeight = 240.0F;
@@ -36,7 +38,8 @@ public class ListenerClient {
     private float scaleY = 1.0F;
     private float minScale = 1.0F;
     private float alpha =0.0f;
-    private int scrollOffset =0;
+    private float scrollOffset =0;
+    private float maxScrollOffset =0;
     private static ListenerClient instance;
     public static ListenerClient getInstance() {
         return instance;
@@ -49,8 +52,10 @@ public class ListenerClient {
             priority = EventPriority.HIGH
     )
     public void eventHandlerTabRender(RenderGameOverlayEvent.Pre event) {
-        if(!Keyboard.isKeyDown(Keyboard.KEY_TAB) && alpha!=0.0f)
+        if(!Keyboard.isKeyDown(Keyboard.KEY_TAB) && alpha!=0.0f){
             alpha=0.0f;
+            scrollOffset=0;
+        }
 
         if (event.type == RenderGameOverlayEvent.ElementType.PLAYER_LIST)
             event.setCanceled(true);
@@ -65,12 +70,22 @@ public class ListenerClient {
             recalculateScale(widthScreen,heightScreen);
             ArrayList<GuiPlayerInfo> players = new ArrayList(handler.playerInfoList);
             List<String> playerNames = players.stream().map(f->f.name).collect(Collectors.toList());
+            maxScrollOffset = Math.max(0,(playerNames.size()/4)*20 - 125F);
             drawBackground(widthScreen,heightScreen,
                     players.stream().filter(f->f.name.equals(this.mc.getSession().getUsername())).findFirst().get().responseTime, players.size());
             drawScissorList(widthScreen,heightScreen,playerNames);
+            drawScrollRect(widthScreen,heightScreen);
+
             if(alpha<0.9)
                 alpha+=0.1f;
         }
+    }
+    private void drawScrollRect(int widthScreen, int heightScreen){
+        if(maxScrollOffset==0)
+            return;
+        float ww =(125/ (125+maxScrollOffset));
+        DrawUtil.drawRectFloat(widthScreen/2+145*minScale , heightScreen/2 -54*minScale+ scrollOffset*minScale*ww,
+                widthScreen/2+146*minScale, Math.min(heightScreen/2 -50*minScale + ww*minScale*110 + scrollOffset*minScale*ww, heightScreen/2 - 55*minScale + minScale * 125F), Color.white.getRGB(), alpha);
     }
     private void drawScissorList(int widthScreen, int heightScreen,List<String> list1){
         //pushmatrix to move it to float coords cuz scissor can be called only with int values
@@ -81,12 +96,12 @@ public class ListenerClient {
         glScissor((widthScreen/2-140*minScale), (heightScreen/2 - 55*minScale),(minScale * 280F),  (minScale * 125F));
         //main render
         AtomicInteger a = new AtomicInteger();
+        mc.thePlayer.addChatMessage(new ChatComponentText("size:"+maxScrollOffset));
         for(PlayerInfoObj ob : playerList.values()) {
             if (!list1.contains(ob.getUsername())) //player in vanish
                 continue;
-            mc.thePlayer.addChatMessage(new ChatComponentText("size:"+list1.size()+", size:"+playerList.values().size()));
             float xVal = ((a.get()) % 4) * 71.3F * minScale;
-            float yVal = ((a.get()) / 4) * 20 * minScale + scrollOffset * minScale;
+            float yVal = ((a.get()) / 4) * 20 * minScale - scrollOffset * minScale;
             DrawUtil.drawImage(xVal, yVal, 66 * minScale, 15 * minScale, ResourcesProxy.buttonHover, alpha);
             //Avatar
             PhotoRender.getInstance().drawAvatar(ob.getUsername(), xVal + 2 * minScale, yVal + 2 * minScale, 11 * minScale, 11 * minScale, 1);
@@ -99,7 +114,7 @@ public class ListenerClient {
                 drawRoleText = drawRoleText.equals("exlntab") ? "Player" : drawRoleText;
                 if (!ConfigHandler.useColorCodes) {
                     while (drawRoleText.contains("&")) {
-                        drawRoleText = drawRoleText.replace(drawRoleText.substring(drawRoleText.indexOf("&"), drawRoleText.indexOf("&") + 1), "");
+                        drawRoleText = drawRoleText.replace(drawRoleText.substring(drawRoleText.indexOf("&"), drawRoleText.indexOf("&") + 2), "");
                     }
                     while (drawRoleText.contains("§")) {
                         drawRoleText = drawRoleText.replace(drawRoleText.substring(drawRoleText.indexOf("§"), drawRoleText.indexOf("§") + 2), "");
@@ -140,7 +155,7 @@ public class ListenerClient {
             DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(), "TPS: ",
                     widthScreen/2+5*minScale, heightScreen/2 - 69*minScale,0.25F*minScale, Color.WHITE.getRGB());
             DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(), String.valueOf(tps),
-                    widthScreen/2+23*minScale, heightScreen/2 - 69*minScale,0.25F*minScale, getTpsColor((int) tps));
+                    widthScreen/2+23*minScale, heightScreen/2 - 69*minScale,0.25F*minScale, getTpsColor(Integer.valueOf(tps)));
             DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(),"|",
                     widthScreen/2+41*minScale, heightScreen/2 - 69*minScale,0.15F*minScale, Color.WHITE.getRGB());
         }
@@ -203,5 +218,27 @@ public class ListenerClient {
         float scissorX = x * scale;
         float scissorY = mc.displayHeight - scissorHeight - (y * scale);
         GL11.glScissor((int) scissorX, (int) scissorY, (int) scissorWidth, (int) scissorHeight);
+    }
+    @SubscribeEvent
+    public void rightClick(MouseEvent event) {
+        //if gui not opened or not enough player in list to scroll
+        if(alpha==0.0 || maxScrollOffset==0)
+            return;
+        int dw = event.dwheel;
+        event.setCanceled(true);
+        if(dw != 0) {
+            if (dw > 0) {
+                dw = -1;
+            } else {
+                dw = 1;
+            }
+            float amountScrolled = (float) (dw * 5);
+            if(scrollOffset + amountScrolled > maxScrollOffset)
+                scrollOffset = (int) (maxScrollOffset);
+            else if (scrollOffset + amountScrolled > 0)
+                scrollOffset += amountScrolled;
+            else
+                scrollOffset = 0;
+        }
     }
 }
