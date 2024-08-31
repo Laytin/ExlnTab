@@ -96,7 +96,6 @@ public class ListenerClient {
         glScissor((widthScreen/2-140*minScale), (heightScreen/2 - 55*minScale),(minScale * 280F),  (minScale * 125F));
         //main render
         AtomicInteger a = new AtomicInteger();
-        mc.thePlayer.addChatMessage(new ChatComponentText("size:"+maxScrollOffset));
         for(PlayerInfoObj ob : playerList.values()) {
             if (!list1.contains(ob.getUsername())) //player in vanish
                 continue;
