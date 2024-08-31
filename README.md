@@ -1,5 +1,6 @@
 # EXLN Tab - Scoretab UI mod
 
+# [CurseForge](https://legacy.curseforge.com/minecraft/mc-mods/exln-tab)
 This is one of my many "EXLN" mods, that aims to decorate the appearance of the player list and inject permission prefixes.
 
 On my project I came across a situation where I wanted to refresh the appearance of the players table.
