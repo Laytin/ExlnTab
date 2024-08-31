@@ -15,6 +15,8 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.player.EntityPlayerMP;
 import org.bukkit.Bukkit;
+import ru.justagod.cutter.GradleSide;
+import ru.justagod.cutter.GradleSideOnly;
 
 import java.util.*;
 
@@ -25,8 +27,9 @@ public class ListenerServer {
     private boolean inited = false;
     private boolean sparkInited = false;
     private static int abc = 0;
+    @GradleSideOnly(GradleSide.SERVER)
     private void init(){
-        if(Bukkit.getServer().getPluginManager().isPluginEnabled("PermissionEX")){
+        if(Bukkit.getServer().getPluginManager().isPluginEnabled("PermissionsEx")){
             try {
                 PluginAdapterPEX.init();
                 System.out.println("[EXLNTab] Init PermissionEX plugin");
@@ -62,7 +65,7 @@ public class ListenerServer {
         }
         inited=true;
     }
-
+    @GradleSideOnly(GradleSide.SERVER)
     @SubscribeEvent
     public void onJoinEvent(PlayerEvent.PlayerLoggedInEvent event) {
         if(!inited)
@@ -85,6 +88,7 @@ public class ListenerServer {
         if(sparkInited)
             new TpsPacket(SparkAdapter.getTps()).sendToPlayer((EntityPlayerMP) event.player);
     }
+    @GradleSideOnly(GradleSide.SERVER)
     @SubscribeEvent
     public void tpsTickEvent(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
@@ -98,6 +102,7 @@ public class ListenerServer {
             this.tpsTicks++;
         }
     }
+    @GradleSideOnly(GradleSide.SERVER)
     @SubscribeEvent
     public void onLeftEvent(PlayerEvent.PlayerLoggedOutEvent event) {
         playerListTemp.remove(event.player.getDisplayName());
