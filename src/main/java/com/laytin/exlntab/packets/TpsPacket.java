@@ -17,7 +17,7 @@ public class TpsPacket implements ServerToClientPacket {
 
     @Override
     public void onReceive(Minecraft mc) {
-        DecimalFormat df = new DecimalFormat("##.00");
-        ListenerClient.tps = Double.parseDouble(df.format(tps));
+        DecimalFormat df = new DecimalFormat("##,00");
+        ListenerClient.tps = df.format(tps);
     }
 }
