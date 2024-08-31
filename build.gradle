@@ -5,9 +5,13 @@ buildscript {
             name = "github"
             url = "https://github.com/juanmuscaria/maven/raw/master"
         }
+		maven {
+			url 'https://oss.sonatype.org/content/repositories/snapshots/'
+		}
 	}
 	dependencies {
 		classpath 'net.minecraftforge.gradle:ForgeGradle:[1.2-1.4.6-SNAPSHOT,)'
+		classpath 'tech.justagod:cutter:2.1.0-SNAPSHOT'
 	}
 }
 
@@ -20,7 +24,7 @@ repositories {
 
 apply plugin: 'java'
 apply plugin: 'forge'
-
+apply plugin: 'cutter'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
@@ -33,7 +37,7 @@ minecraft {
 	runDir = "eclipse"
 	replace "@VERSION@", project.version
 }
-
+cutter.initializeDefault(true, false)
 
 dependencies {
 	compileOnly name: 'PermissionsEx1-7-10'
