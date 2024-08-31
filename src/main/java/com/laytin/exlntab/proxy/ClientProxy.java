@@ -14,7 +14,6 @@ public class ClientProxy extends CommonProxy{
         ExlnTab.registerListener(new ListenerClient());
         //init font containers to prevent 1fps lag
         FontStyles.SemiBold.getFontContainer();
-        FontStyles.OpenSans_Italic.getFontContainer();
         FontStyles.OpenSans_Regular.getFontContainer();
     }
 

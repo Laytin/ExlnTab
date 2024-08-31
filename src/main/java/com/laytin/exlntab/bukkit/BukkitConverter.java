@@ -7,10 +7,13 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import ru.justagod.cutter.GradleSide;
+import ru.justagod.cutter.GradleSideOnly;
 
 import java.lang.reflect.Method;
 
 @SideOnly(Side.SERVER)
+@GradleSideOnly(GradleSide.SERVER)
 public class BukkitConverter {
     private static final Method getBukkitEntity;
     public static final Entity toBukkitEntity(Entity entity) throws Exception {

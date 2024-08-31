@@ -5,11 +5,14 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+import ru.justagod.cutter.GradleSide;
+import ru.justagod.cutter.GradleSideOnly;
 
 import java.io.InputStream;
 import java.lang.reflect.Method;
 
 @SideOnly(Side.SERVER)
+@GradleSideOnly(GradleSide.SERVER)
 public class PluginInjector {
     private static final Method defineClass;
 
