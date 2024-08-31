@@ -94,6 +94,13 @@ tabGroupColor {
 ```
 U can add ur colors here in format "groupname":#hexcolor. Use groupname, not a group prefix! Hexcolor u can take [here](https://g.co/kgs/Drv68qV)
 
+# ScreenShots
+Enabled colored bg with color setup, enabled draw tps. Disabled color codes, avatar url in empty.
+![123](https://github.com/user-attachments/assets/6da1f65b-4448-4e33-aecd-59bf56f449b6)
+Disabled colored bg, disabled draw tps. Enabled color codes, installed avatar url.
+![222](https://github.com/user-attachments/assets/e617530f-ebd7-44e9-b75a-26b2fc87c36b)
+
+
 # PermissionsEX Setup 
 ```
 groups:
