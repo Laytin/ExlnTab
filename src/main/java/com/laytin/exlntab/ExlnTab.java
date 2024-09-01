@@ -17,7 +17,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 public class ExlnTab {
     public static final String MODID = "exlntab";
     public static final String NAME = "ExlnTab";
-    public static final String VERSION = "0.1.6";
+    public static final String VERSION = "0.1.7";
     @SidedProxy(clientSide = "com.laytin.exlntab.proxy.ClientProxy", serverSide = "com.laytin.exlntab.proxy.CommonProxy")
     public static CommonProxy proxy;
     public static final Logger logger = LogManager.getLogger("ExlnTab");

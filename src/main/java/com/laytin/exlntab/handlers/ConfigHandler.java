@@ -19,6 +19,7 @@ public class ConfigHandler {
     public static boolean useColorCodes;
     public static boolean drawTPS;
     public static boolean drawRoles;
+    public static boolean useVanillaTeams;
     public static Map<String, String> roleColors = new HashMap<>(); // role ->colour
     static{
         roleColors.put("default", "#525252");
@@ -52,6 +53,7 @@ public class ConfigHandler {
             useColouredBg = config.get("tabSpecific", "Use colored bg", useColouredBg).getBoolean();
             drawTPS = config.get("tabSpecific", "Draw TPS", drawTPS).getBoolean();
             drawRoles = config.get("tabSpecific", "Draw role", drawRoles).getBoolean();
+            useVanillaTeams = config.get("tabSpecific", "Use Vanilla teams", useVanillaTeams).getBoolean();
         } catch (Exception var4) {
             System.out.println("Unable to load Config");
             var4.printStackTrace();

@@ -15,6 +15,7 @@ import net.minecraft.client.gui.GuiPlayerInfo;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.scoreboard.ScoreObjective;
+import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -95,6 +96,61 @@ public class ListenerClient {
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         glScissor((widthScreen/2-140*minScale), (heightScreen/2 - 55*minScale),(minScale * 280F),  (minScale * 125F));
         //main render
+        if(!ConfigHandler.useVanillaTeams)
+            drawPlayers(list1);
+        else
+            drawPlayersVanilla(list1);
+
+        //main render
+        GL11.glDisable(GL11.GL_SCISSOR_TEST);
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glDisable(GL11.GL_ALPHA_TEST);
+        //popmatrix glscissor
+        GL11.glPopMatrix();
+    }
+
+    private void drawPlayersVanilla(List<String> list1) {
+        AtomicInteger a = new AtomicInteger();
+        for(String ib : list1) {
+            //setup new PlayerInfoObj, based on vanilla team
+            ScorePlayerTeam team = this.mc.theWorld.getScoreboard().getPlayersTeam(ib);
+            PlayerInfoObj ob = new PlayerInfoObj(team.getRegisteredName(),team.getColorPrefix(), ib,0);
+            float xVal = ((a.get()) % 4) * 71.3F * minScale;
+            float yVal = ((a.get()) / 4) * 20 * minScale - scrollOffset * minScale;
+            DrawUtil.drawImage(xVal, yVal, 66 * minScale, 15 * minScale, ResourcesProxy.buttonHover, alpha);
+            //Avatar
+            PhotoRender.getInstance().drawAvatar(ob.getUsername(), xVal + 2 * minScale, yVal + 2 * minScale, 11 * minScale, 11 * minScale, 1);
+            //Name
+            DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(), FontStyles.SemiBold.getFontContainer().getTextFont().trimStringToWidth(ob.getUsername(), 200, false),
+                    xVal + 15 * minScale, yVal + 4 * minScale, 0.2F * minScale, Color.WHITE.getRGB());
+            //roles
+            if (ConfigHandler.drawRoles) {
+                String drawRoleText = ConfigHandler.useGroupName ? ob.getRole() : ob.getRoleDisplayName();
+                drawRoleText = drawRoleText.equals("exlntab") ? "Player" : drawRoleText;
+                if (!ConfigHandler.useColorCodes) {
+                    while (drawRoleText.contains("&")) {
+                        drawRoleText = drawRoleText.replace(drawRoleText.substring(drawRoleText.indexOf("&"), drawRoleText.indexOf("&") + 2), "");
+                    }
+                    while (drawRoleText.contains("§")) {
+                        drawRoleText = drawRoleText.replace(drawRoleText.substring(drawRoleText.indexOf("§"), drawRoleText.indexOf("§") + 2), "");
+                    }
+                } else {
+                    drawRoleText = drawRoleText.replace("&", "§");
+                }
+                drawRoleText = FontStyles.SemiBold.getFontContainer().getTextFont().trimStringToWidth(drawRoleText, 150, false);
+                if (ConfigHandler.useColouredBg)
+                    DrawUtil.drawRoundedSquare(xVal + 15 * minScale, yVal + 8 * minScale,
+                            Math.min(FontStyles.SemiBold.getFontContainer().width(drawRoleText) * 0.17F * minScale + 6 * minScale, 51 * minScale), 5 * minScale, 1 * minScale,
+                            hex2Rgb(ConfigHandler.getColourByRole(ob.getRole())).getRGB(), alpha);
+
+                DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(), drawRoleText,
+                        ConfigHandler.useColouredBg ? xVal + 18 * minScale : xVal + 15 * minScale, yVal + 10.5f * minScale, 0.17F * minScale, Color.WHITE.getRGB());
+            }
+        }
+    }
+
+    private void drawPlayers(List<String> list1){
         AtomicInteger a = new AtomicInteger();
         for(PlayerInfoObj ob : playerList.values()) {
             if (!list1.contains(ob.getUsername())) //player in vanish
@@ -125,22 +181,13 @@ public class ListenerClient {
                 if (ConfigHandler.useColouredBg)
                     DrawUtil.drawRoundedSquare(xVal + 15 * minScale, yVal + 8 * minScale,
                             Math.min(FontStyles.SemiBold.getFontContainer().width(drawRoleText) * 0.17F * minScale + 6 * minScale, 51 * minScale), 5 * minScale, 1 * minScale,
-                                    hex2Rgb(ConfigHandler.getColourByRole(ob.getRole())).getRGB(), alpha);
+                            hex2Rgb(ConfigHandler.getColourByRole(ob.getRole())).getRGB(), alpha);
 
                 DrawUtil.drawStringWithDepth(FontStyles.SemiBold.getFontContainer(), drawRoleText,
                         ConfigHandler.useColouredBg ? xVal + 18 * minScale : xVal + 15 * minScale, yVal + 10.5f * minScale, 0.17F * minScale, Color.WHITE.getRGB());
             }
-            a.incrementAndGet();
         }
-        //main render
-        GL11.glDisable(GL11.GL_SCISSOR_TEST);
-        GL11.glEnable(GL11.GL_BLEND);
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GL11.glDisable(GL11.GL_ALPHA_TEST);
-        //popmatrix glscissor
-        GL11.glPopMatrix();
     }
-
     private void drawBackground(int widthScreen, int heightScreen, int ping, int online){
         DrawUtil.drawImage(widthScreen / 2 - 150 * minScale, heightScreen / 2 - 80 * minScale, 300 * minScale, 160 * minScale, ResourcesProxy.bigWindow, alpha);
         DrawUtil.drawRectFloat(widthScreen/2-140*minScale , heightScreen/2 - 60*minScale,
