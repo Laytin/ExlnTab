@@ -42,11 +42,14 @@ Please, If this is what you've been looking for and I was able to help you, you 
 # How to setup
 U can setup a lot things in config/exlntab.cfg
 
+If this option enabled, tab will draw team prefix instead of permission role. (like FancyTab)
+```
+B:"Use Vanilla teams"=true
+```
 This option mean that we should inject in Spark plugin (if exist) and write current tps in tab. If Spark not installed, but option is *true* -  always returns 20.0:
 ```
 B:"Draw TPS"=true
 ```
-
 Should we draw role under player name in tab:
 ```
 B:"Draw role"=true
