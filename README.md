@@ -30,6 +30,8 @@ U can also setup all colors for role display!
 Please, If this is what you've been looking for and I was able to help you, you can always thank me on Patreon:
 [Clickable](https://patreon.com/Laytin) 
 
+Any questions - add me in discord: `ne9ko`
+
 # How to install
 - Download both versions of file, ***-server.jar and ***-client.jar
 - Put ***-client.jar version in ur launcher minecraft/mods path (or minecraft/mods/1.7.10)
@@ -42,11 +44,14 @@ Please, If this is what you've been looking for and I was able to help you, you 
 # How to setup
 U can setup a lot things in config/exlntab.cfg
 
+If this option enabled, tab will draw team prefix instead of permission role. (like FancyTab)
+```
+B:"Use Vanilla teams"=true
+```
 This option mean that we should inject in Spark plugin (if exist) and write current tps in tab. If Spark not installed, but option is *true* -  always returns 20.0:
 ```
 B:"Draw TPS"=true
 ```
-
 Should we draw role under player name in tab:
 ```
 B:"Draw role"=true
@@ -107,14 +112,10 @@ groups:
       prefix: 'Player'
       default: 'true'
       rank: '10'
-    permissions:
-    - modifyworld.*
   adm:
     options:
       prefix: 'Admin'
       rank: '100'
-    permissions:
-    - modifyworld.*
 ```
 Rank affects the score of the player with the privilege. This is done to ensure that administrators are at the top of the list. Accordingly, the tab displays players as their rank decreases
 
