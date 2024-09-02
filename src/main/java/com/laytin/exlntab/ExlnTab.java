@@ -13,11 +13,11 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
-@Mod(modid = ExlnTab.MODID, version = ExlnTab.VERSION, name = ExlnTab.NAME)
+@Mod(modid = ExlnTab.MODID, name = ExlnTab.NAME, version = ExlnTab.VERSION)
 public class ExlnTab {
     public static final String MODID = "exlntab";
-    public static final String NAME = "ExlnTab";
-    public static final String VERSION = "0.1.7";
+    public static final String NAME = "ExlnTab Mod";
+    public static final String VERSION = "0.1.8";
     @SidedProxy(clientSide = "com.laytin.exlntab.proxy.ClientProxy", serverSide = "com.laytin.exlntab.proxy.CommonProxy")
     public static CommonProxy proxy;
     public static final Logger logger = LogManager.getLogger("ExlnTab");
